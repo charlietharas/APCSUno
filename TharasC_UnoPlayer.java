@@ -35,6 +35,57 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     public int play(List<Card> hand, Card upCard, Color calledColor, GameState state)
     {
         // THIS IS WHERE YOUR AMAZING CODE GOES
+    	Color c = null;
+    	if (upCard.getRank() == Rank.WILD || upCard.getRank() == Rank.WILD_D4) {
+    		
+    		c = calledColor;
+    		
+    	} else {
+    		
+    		c = upCard.getColor();
+    		
+    	}
+    	
+    	int ind = 0;
+    	for (Card i : hand) {
+    		
+    		if (i.getColor() == c) {
+    			
+    			return ind;
+    			
+    		}
+    		ind++;
+    	}
+    	
+    	ind = 0;
+    	for (Card i : hand) {
+    		
+    		if  (upCard.getRank() == Rank.NUMBER && i.getNumber() == upCard.getNumber()) {
+    			
+    			return ind;
+    			
+    		}
+    		else if (upCard.getRank() != Rank.NUMBER && upCard.getRank() == i.getRank()) {
+    			
+    			return ind;
+    			
+    		}
+    		ind++;
+    		
+    	}
+    	
+    	ind = 0;
+    	for (Card i : hand) {
+    		
+    		if (i.getRank() == Rank.WILD || i.getRank() == Rank.WILD_D4) {
+    			
+    			return ind;
+    			
+    		}
+    		ind++;
+    		
+    	}
+    	
         return -1;
     }
 
@@ -49,6 +100,6 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     public Color callColor(List<Card> hand)
     {
         // THIS IS WHERE YOUR AMAZING CODE GOES
-        return null;
+        return Color.RED;
     }
 }
