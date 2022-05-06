@@ -1,0 +1,16 @@
+Card
+- canPlayOn: used to check if a card can be legally played on another card
+- forfeitCost: used to check the points value of a card if you are holding it when you lose
+- followedByCall: easier way to check if this card is a wild-type card
+- getColor: returns color
+- getNumber: returns number
+- getRank: returns rank
+
+GameState
+?? LOOK INTO THIS MORE -- IMPORTANT
+- getNumCardsInHandsOfUpcomingPlayers: return array of numbers of cards in all players' hands
+- getTotalScoreOfUpcomingPlayers: get total score of all players
+- getMostRecentColorCalledByUpcomingPlayers: get most recent color played by all players
+- getPlayedCards: return list of all played cards (in order, I think?)
+
+Pretty sure we can only use these two classes in our UnoPlayer and the rest aren't useful to us, but LOOK AT THIS LATER.
