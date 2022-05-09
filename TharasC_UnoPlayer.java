@@ -32,9 +32,25 @@ public class TharasC_UnoPlayer implements UnoPlayer {
      * in which case you will be forced to draw a card (this will happen
      * automatically for you.)
      */
+	
+	// red, green, blue, yellow
+	public int[] colorsPlayed = {0, 0, 0, 0};
+	// ranks played list TODO
+	// priority list
+	//Rank[] priority = {Rank.WILD_D4, Rank.DRAW_TWO, Rank.SKIP, Rank.REVERSE, Rank.NUMBER, Rank.WILD};
+	Rank[] priority = {Rank.NUMBER, Rank.SKIP, Rank.REVERSE, Rank.WILD, Rank.DRAW_TWO, Rank.WILD_D4};
+	
     public int play(List<Card> hand, Card upCard, Color calledColor, GameState state)
     {
-        // THIS IS WHERE YOUR AMAZING CODE GOES
+    	int returnInd = -1;
+    	// update colors and ranks played
+    	for (Color i : state.getMostRecentColorCalledByUpcomingPlayers()) {
+    		
+    		if (i != null) { colorsPlayed[getColorValue(i)] ++; }
+    		
+    	}
+    	
+        // get current played color
     	Color c = null;
     	if (upCard.getRank() == Rank.WILD || upCard.getRank() == Rank.WILD_D4) {
     		
@@ -46,47 +62,31 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     		
     	}
     	
-    	int ind = 0;
-    	for (Card i : hand) {
+    	Rank r = upCard.getRank();
+    	// boolean to quit loop
+    	boolean breakBool = false;
+    	for (Rank i : priority) {
     		
-    		if (i.getColor() == c) {
+    		for (int j = 0; j < hand.size(); j++) {
+    			Card curr = hand.get(j);
     			
-    			return ind;
+    			if (curr.getRank() == i && curr.canPlayOn(upCard, calledColor)) {
+    				
+    				returnInd = j;
+    				breakBool = true;
+    				break;
+    				
+    			}
     			
     		}
-    		ind++;
-    	}
-    	
-    	ind = 0;
-    	for (Card i : hand) {
     		
-    		if  (upCard.getRank() == Rank.NUMBER && i.getNumber() == upCard.getNumber()) {
-    			
-    			return ind;
-    			
-    		}
-    		else if (upCard.getRank() != Rank.NUMBER && upCard.getRank() == i.getRank()) {
-    			
-    			return ind;
-    			
-    		}
-    		ind++;
+    		if (breakBool) { break; }
     		
     	}
     	
-    	ind = 0;
-    	for (Card i : hand) {
-    		
-    		if (i.getRank() == Rank.WILD || i.getRank() == Rank.WILD_D4) {
-    			
-    			return ind;
-    			
-    		}
-    		ind++;
-    		
-    	}
+    	// colorsPlayed[getColorValue(hand.get(returnInd).getColor())] ++;
+    	return returnInd;
     	
-        return -1;
     }
 
     /**
@@ -99,7 +99,43 @@ public class TharasC_UnoPlayer implements UnoPlayer {
      */
     public Color callColor(List<Card> hand)
     {
-        // THIS IS WHERE YOUR AMAZING CODE GOES
+        int max = colorsPlayed[0];
+        int ind = 0;
+        for (int i = 1; i < 4; i++) {
+        	
+        	if (colorsPlayed[i] > max) {
+        		
+        		ind = i;
+        		
+        	}
+        	
+        }
+        switch(ind) {
+	        case 0: return Color.RED;
+	        case 1: return Color.GREEN;
+	        case 2: return Color.BLUE;
+	        case 3: return Color.YELLOW;
+        }
+        
         return Color.RED;
+        
     }
+    
+    public int getColorValue(Color c) {
+    	
+    	switch (c) {
+    		
+	    	case RED : return 0;
+	    	case GREEN : return 1;
+	    	case BLUE : return 2;
+	    	case YELLOW : return 3;
+		default:
+			break;
+    		
+    	}
+    	
+    	return -1;
+    	
+    }
+    
 }
