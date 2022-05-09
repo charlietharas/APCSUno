@@ -44,7 +44,7 @@ public class UnoSimulation
     private static ArrayList<String> playerNames = new ArrayList<String>();
     private static ArrayList<String> playerClasses = new ArrayList<String>();
 
-    public static int GAMES = 2;
+    public static int GAMES = 500;
     
     /** 
      * Run an Uno simulation of some number of games pitting some set of
