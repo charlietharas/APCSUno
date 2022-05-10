@@ -51,7 +51,7 @@ public class Scoreboard
         for (int i = 0; i < scores.length; i++)
         {
             //retval += "Player #" + i + "(" + playerList[i] +"): " + scores[i] + "\n";
-            retval += "Player #" + i + ": " + scores[i] + "\n";
+            retval += "Player " + playerList[i] + " #" + i + ": " + scores[i] + "\n";
         }
         return retval;
     }
