@@ -1,0 +1,6 @@
+?? PYTHON ??
+Can I make this a neural net in Python? IDK... its a lot of work
+Can I make a machine learning process in Java? Probably, let's try that.
+
+Reminder to self: more aggressive algorithm works better for now
+- remember to put wild card higher because it's worth more
