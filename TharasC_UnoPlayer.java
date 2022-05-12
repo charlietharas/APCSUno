@@ -34,11 +34,12 @@ public class TharasC_UnoPlayer implements UnoPlayer {
      */
 	
 	// red, green, blue, yellow
-	public int[] colorsPlayed = {0, 0, 0, 0};
+	private int[] colorsPlayed = {0, 0, 0, 0};
+	
 	// ranks played list TODO
 	// priority list
-	//Rank[] priority = {Rank.WILD_D4, Rank.DRAW_TWO, Rank.SKIP, Rank.REVERSE, Rank.NUMBER, Rank.WILD};
-	Rank[] priority = {Rank.NUMBER, Rank.SKIP, Rank.REVERSE, Rank.WILD, Rank.DRAW_TWO, Rank.WILD_D4};
+	//Rank[] priority = {Rank.WILD_D4, Rank.DRAW_TWO, Rank.SKIP, Rank.REVERSE, Rank.NUMBER, Rank.WILD}; // most aggressive
+	Rank[] priority = {Rank.NUMBER, Rank.SKIP, Rank.REVERSE, Rank.WILD, Rank.DRAW_TWO, Rank.WILD_D4}; // least aggressive
 	
     public int play(List<Card> hand, Card upCard, Color calledColor, GameState state)
     {
@@ -47,6 +48,20 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     	for (Color i : state.getMostRecentColorCalledByUpcomingPlayers()) {
     		
     		if (i != null) { colorsPlayed[getColorValue(i)] ++; }
+    		
+    	}
+    	
+    	// get color priority
+    	int[] colorPrio = new int[4];
+    	colorPrio[0] = colorsPlayed[0];
+    	colorPrio[1] = colorsPlayed[1];
+    	colorPrio[2] = colorsPlayed[2];
+    	colorPrio[3] = colorsPlayed[3];
+    	Color[] realColorPriority = new Color[4];
+    	for (int i = 0; i < 4; i++) {
+    		
+    		realColorPriority[i] = getMostUsedColor(colorPrio);
+    		colorPrio[getColorValue(realColorPriority[i])] = -1;
     		
     	}
     	
@@ -65,23 +80,27 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     	Rank r = upCard.getRank();
     	// boolean to quit loop
     	boolean breakBool = false;
-    	for (Rank i : priority) {
-    		
-    		for (int j = 0; j < hand.size(); j++) {
-    			Card curr = hand.get(j);
-    			
-    			if (curr.getRank() == i && curr.canPlayOn(upCard, calledColor)) {
-    				
-    				returnInd = j;
-    				breakBool = true;
-    				break;
-    				
-    			}
-    			
-    		}
-    		
-    		if (breakBool) { break; }
-    		
+    	for (Color col : realColorPriority) {
+    	
+	    	for (Rank i : priority) {
+	    		
+	    		for (int j = 0; j < hand.size(); j++) {
+	    			Card curr = hand.get(j);
+	    			
+	    			if (curr.getColor() == col && curr.getRank() == i && curr.canPlayOn(upCard, calledColor)) {
+	    				
+	    				returnInd = j;
+	    				breakBool = true;
+	    				break;
+	    				
+	    			}
+	    			
+	    		}
+	    		
+	    		if (breakBool) { break; }
+	    		
+	    	}
+	    	
     	}
     	
     	// colorsPlayed[getColorValue(hand.get(returnInd).getColor())] ++;
@@ -99,26 +118,33 @@ public class TharasC_UnoPlayer implements UnoPlayer {
      */
     public Color callColor(List<Card> hand)
     {
-        int max = colorsPlayed[0];
-        int ind = 0;
-        for (int i = 1; i < 4; i++) {
-        	
-        	if (colorsPlayed[i] > max) {
-        		
-        		ind = i;
-        		
-        	}
-        	
-        }
-        switch(ind) {
-	        case 0: return Color.RED;
-	        case 1: return Color.GREEN;
-	        case 2: return Color.BLUE;
-	        case 3: return Color.YELLOW;
-        }
+       
+    	return getMostUsedColor(colorsPlayed);
         
-        return Color.RED;
-        
+    }
+    
+    private Color getMostUsedColor(int[] colorArr) {
+    	
+    	 int max = colorArr[0];
+         int ind = 0;
+         for (int i = 1; i < 4; i++) {
+         	
+         	if (colorArr[i] > max) {
+         		
+         		ind = i;
+         		
+         	}
+         	
+         }
+         switch(ind) {
+ 	        case 0: return Color.RED;
+ 	        case 1: return Color.GREEN;
+ 	        case 2: return Color.BLUE;
+ 	        case 3: return Color.YELLOW;
+         }
+         
+         return Color.RED;
+    	
     }
     
     public int getColorValue(Color c) {
