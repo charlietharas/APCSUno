@@ -4,3 +4,6 @@ Can I make a machine learning process in Java? Probably, let's try that.
 
 Reminder to self: more aggressive algorithm works better for now
 - remember to put wild card higher because it's worth more
+
+FIX THE UNO PLAYER SO THAT IT CAN PLAY WILD CARDS CORRECTLY (curr.followedByCall() || curr.getColor() == color) && ........
+bozo
