@@ -1,167 +1,178 @@
+import java.util.Arrays;
 import java.util.List;
 
 public class TharasC_UnoPlayer implements UnoPlayer {
-    /**
-     * play - This method is called when it's your turn and you need to
-     * choose what card to play.
-     *
-     * The hand parameter tells you what's in your hand. You can call
-     * getColor(), getRank(), and getNumber() on each of the cards it
-     * contains to see what it is. The color will be the color of the card,
-     * or "Color.NONE" if the card is a wild card. The rank will be
-     * "Rank.NUMBER" for all numbered cards, and another value (e.g.,
-     * "Rank.SKIP," "Rank.REVERSE," etc.) for special cards. The value of
-     * a card's "number" only has meaning if it is a number card. 
-     * (Otherwise, it will be -1.)
-     *
-     * The upCard parameter works the same way, and tells you what the 
-     * up card (in the middle of the table) is.
-     *
-     * The calledColor parameter only has meaning if the up card is a wild,
-     * and tells you what color the player who played that wild card called.
-     *
-     * Finally, the state parameter is a GameState object on which you can 
-     * invoke methods if you choose to access certain detailed information
-     * about the game (like who is currently ahead, what colors each player
-     * has recently called, etc.)
-     *
-     * You must return a value from this method indicating which card you
-     * wish to play. If you return a number 0 or greater, that means you
-     * want to play the card at that index. If you return -1, that means
-     * that you cannot play any of your cards (none of them are legal plays)
-     * in which case you will be forced to draw a card (this will happen
-     * automatically for you.)
-     */
-	
-	// red, green, blue, yellow
-	private int[] colorsPlayed = {0, 0, 0, 0};
-	
-	// ranks played list TODO
-	// priority list
-	//Rank[] priority = {Rank.WILD_D4, Rank.DRAW_TWO, Rank.SKIP, Rank.REVERSE, Rank.NUMBER, Rank.WILD}; // most aggressive
-	Rank[] priority = {Rank.NUMBER, Rank.SKIP, Rank.REVERSE, Rank.WILD, Rank.DRAW_TWO, Rank.WILD_D4}; // least aggressive
-	
+	// COLOR ORDER RED YELLOW GREEN BLUE
+	// RANK ORDER NUMBER SKIP REVERSE D2 WILD WILD_D4
+		
+	List<Card> played;
+	private final int[] cols = {25, 25, 25, 25};
+	private final int[] ranks = {76, 8, 8, 8, 4, 4};
+	// REQUIRED METHOD
     public int play(List<Card> hand, Card upCard, Color calledColor, GameState state)
     {
-    	int returnInd = -1;
-    	// update colors and ranks played
-    	for (Color i : state.getMostRecentColorCalledByUpcomingPlayers()) {
+		played = state.getPlayedCards();
+    	
+		// generates the amount of cards left in the game for each color
+    	int[] colsRemain = Arrays.copyOf(playedColorCount(played), 4);
+    	int[] ranksRemain = Arrays.copyOf(playedRankCount(played), 6);
+    	for (int i = 0; i < 6; i++) {
     		
-    		if (i != null) { colorsPlayed[getColorValue(i)] ++; }
+    		if (i < 4) {
+	    		colsRemain[i] = cols[i]-colsRemain[i];
+    		}
+    		ranksRemain[i] = ranks[i]-ranksRemain[i];
     		
     	}
     	
-    	// get color priority
-    	int[] colorPrio = new int[4];
-    	colorPrio[0] = colorsPlayed[0];
-    	colorPrio[1] = colorsPlayed[1];
-    	colorPrio[2] = colorsPlayed[2];
-    	colorPrio[3] = colorsPlayed[3];
-    	Color[] realColorPriority = new Color[4];
-    	for (int i = 0; i < 4; i++) {
+    	// subtracts penalties for preferred colors
+    	for(Color i : state.getMostRecentColorCalledByUpcomingPlayers()) {
     		
-    		realColorPriority[i] = getMostUsedColor(colorPrio);
-    		colorPrio[getColorValue(realColorPriority[i])] = -1;
+    		if (i != null && getColorValue(i) >= 0) {
+    			
+    			colsRemain[getColorValue(i)] -= 5;
+    			
+    		}
     		
     	}
     	
-        // get current played color
-    	Color c = null;
-    	if (upCard.getRank() == Rank.WILD || upCard.getRank() == Rank.WILD_D4) {
+    	// updates the amount of cards left in the game based on what we know about each hand
+    	for (Card i : hand) {
     		
-    		c = calledColor;
-    		
-    	} else {
-    		
-    		c = upCard.getColor();
+    		ranksRemain[getRankValue(i.getRank())] -= 1;
+    		if (i.getColor() != Color.NONE) {
+    			
+    			colsRemain[getColorValue(i.getColor())] -= 1;
+    			
+    		}
     		
     	}
     	
-    	Rank r = upCard.getRank();
-    	// boolean to quit loop
-    	boolean breakBool = false;
-    	for (Color col : realColorPriority) {
-    	
-	    	for (Rank i : priority) {
-	    		
-	    		for (int j = 0; j < hand.size(); j++) {
-	    			Card curr = hand.get(j);
-	    			
-	    			if (curr.getColor() == col && curr.getRank() == i && curr.canPlayOn(upCard, calledColor)) {
-	    				
-	    				returnInd = j;
-	    				breakBool = true;
-	    				break;
-	    				
-	    			}
-	    			
-	    		}
-	    		
-	    		if (breakBool) { break; }
-	    		
-	    	}
-	    	
+    	// strongly discourages passive play when danger is detected
+    	if (state.getNumCardsInHandsOfUpcomingPlayers()[1] - hand.size() > 2 || state.getNumCardsInHandsOfUpcomingPlayers()[1] <= 3) {
+    		
+    		ranksRemain[0] += 50;
+    		ranksRemain[1] -= 40;
+    		ranksRemain[2] -= 20;
+    		ranksRemain[3] -= 60;
+    		ranksRemain[5] -= 100;
+    		
     	}
     	
-    	// colorsPlayed[getColorValue(hand.get(returnInd).getColor())] ++;
-    	return returnInd;
+    	// generates a penalty value for each card in hand
+    	int[] penalty = new int[hand.size()];
+    	for (int i = 0; i < penalty.length; i++) {
+    		
+    		Card c = hand.get(i); int cval;
+    		if (c.getColor() == Color.NONE) {
+    			cval = 0;
+    		} else {
+    			cval = colsRemain[getColorValue(c.getColor())];
+    		}
+    		penalty[i] += cval*5 + ranksRemain[getRankValue(c.getRank())] - c.forfeitCost()/2;
+    		
+    	}
+    	
+    	// picks a card with the minimum penalty
+    	int min = Integer.MAX_VALUE;
+    	int minind = -1;
+    	for (int i = 0; i < penalty.length; i++){
+    		
+    		if (penalty[i] < min && hand.get(i).canPlayOn(upCard, calledColor)) {
+    			
+    			min = penalty[i];
+    			minind = i;
+    			
+    		}
+    		
+    	}
+    	
+    	return minind;
     	
     }
 
-    /**
-     * callColor - This method will be called when you have just played a
-     * wild card, and is your way of specifying which color you want to 
-     * change it to.
-     *
-     * You must return a valid Color value from this method. You must not
-     * return the value Color.NONE under any circumstances.
-     */
+    // REQUIRED METHOD
     public Color callColor(List<Card> hand)
     {
        
-    	return getMostUsedColor(colorsPlayed);
+    	int[] colorArr = playedColorCount(played);
+    	int max = colorArr[0];
+        int ind = 0;
+        Color c = Color.RED;
+        for (int i = 1; i < 4; i++) {
+        	
+        	if (colorArr[i] > max) {
+        		
+        		ind = i;
+        		
+        	}
+        	
+        }
+        switch(ind) {
+	        case 0: c = Color.RED;
+	        case 1: c = Color.YELLOW;
+	        case 2: c = Color.GREEN;
+	        case 3: c = Color.BLUE;
+        }
+        
+    	return c;
         
     }
     
-    private Color getMostUsedColor(int[] colorArr) {
+    private int[] playedColorCount(List<Card> played) {
     	
-    	 int max = colorArr[0];
-         int ind = 0;
-         for (int i = 1; i < 4; i++) {
-         	
-         	if (colorArr[i] > max) {
-         		
-         		ind = i;
-         		
-         	}
-         	
-         }
-         switch(ind) {
- 	        case 0: return Color.RED;
- 	        case 1: return Color.GREEN;
- 	        case 2: return Color.BLUE;
- 	        case 3: return Color.YELLOW;
-         }
-         
-         return Color.RED;
+    	int[] colsPlayed = new int[4];
+    	for (Card i : played) {
+    		
+    		if (!i.followedByCall()) {
+    			colsPlayed[getColorValue(i.getColor())] ++;
+    		}
+    		
+    	}
+    	
+    	return colsPlayed;
     	
     }
     
-    public int getColorValue(Color c) {
+    private int[] playedRankCount(List<Card> played) {
+    	
+    	int[] ranksPlayed = new int[6];
+    	for (Card i : played) {
+    		
+    		ranksPlayed[getRankValue(i.getRank())] ++;
+    		
+    	}
+    	
+    	return ranksPlayed;
+    	
+    }
+        
+    private int getColorValue(Color c) {
     	
     	switch (c) {
-    		
 	    	case RED : return 0;
-	    	case GREEN : return 1;
-	    	case BLUE : return 2;
-	    	case YELLOW : return 3;
-		default:
-			break;
-    		
+	    	case YELLOW : return 1;
+	    	case GREEN : return 2;
+	    	case BLUE : return 3;
+	    	case NONE: return -1;
     	}
     	
     	return -1;
     	
+    }
+    
+    private int getRankValue(Rank r) {
+    	
+    	switch(r){
+    		case NUMBER: return 0;
+    		case SKIP: return 1;
+    		case REVERSE: return 2;
+    		case DRAW_TWO: return 3;
+    		case WILD: return 4;
+    		case WILD_D4: return 5;
+    	}
+    	
+    	return -1;
     }
     
 }
