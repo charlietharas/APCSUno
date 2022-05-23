@@ -49,13 +49,25 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     	}
     	
     	// strongly discourages passive play when danger is detected
-    	if (state.getNumCardsInHandsOfUpcomingPlayers()[1] - hand.size() > 2 || state.getNumCardsInHandsOfUpcomingPlayers()[1] <= 3) {
+    	int[] hands = state.getNumCardsInHandsOfUpcomingPlayers();
+    	if (hands[1] - hand.size() > 2 || hands[1] < 4) {
     		
     		ranksRemain[0] += 50;
     		ranksRemain[1] -= 40;
     		ranksRemain[2] -= 20;
     		ranksRemain[3] -= 60;
     		ranksRemain[5] -= 100;
+    		
+    	}
+    	
+    	// strongly discourages skipping helpful intermediaries when distant player may have low cards
+    	if (hands[2] < 4 || hands[3] < 4) {
+    		
+    		ranksRemain[1] += 60;
+    		ranksRemain[2] += 60;
+    		ranksRemain[3] += 80;
+    		ranksRemain[4] -= 50;
+    		ranksRemain[5] -= 50;
     		
     	}
     	
@@ -119,6 +131,7 @@ public class TharasC_UnoPlayer implements UnoPlayer {
         
     }
     
+    // get color-indexed count of all colors played
     private int[] playedColorCount(List<Card> played) {
     	
     	int[] colsPlayed = new int[4];
@@ -134,6 +147,7 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     	
     }
     
+    // get rank-indexed count of all ranks played
     private int[] playedRankCount(List<Card> played) {
     	
     	int[] ranksPlayed = new int[6];
@@ -147,6 +161,7 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     	
     }
         
+    // returns index from color
     private int getColorValue(Color c) {
     	
     	switch (c) {
@@ -161,6 +176,7 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     	
     }
     
+    // returns index from rank
     private int getRankValue(Rank r) {
     	
     	switch(r){
