@@ -50,18 +50,18 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     	
     	// strongly discourages passive play when danger is detected
     	int[] hands = state.getNumCardsInHandsOfUpcomingPlayers();
-    	if (hands[1] - hand.size() > 2 || hands[1] < 4) {
+    	if (hands[0] - hand.size() > 2 || hands[0] < 4) {
     		
-    		ranksRemain[0] += 50;
-    		ranksRemain[1] -= 40;
-    		ranksRemain[2] -= 20;
-    		ranksRemain[3] -= 60;
-    		ranksRemain[5] -= 100;
+    		ranksRemain[0] += 100;
+    		ranksRemain[1] -= 200;
+    		ranksRemain[2] -= 200;
+    		ranksRemain[3] -= 2000;
+    		ranksRemain[5] -= 2000;
     		
     	}
     	
     	// strongly discourages skipping helpful intermediaries when distant player may have low cards
-    	if (hands[2] < 4 || hands[3] < 4) {
+    	if (hands[1] < 4 || hands[2] < 4) {
     		
     		ranksRemain[1] += 60;
     		ranksRemain[2] += 60;
@@ -70,6 +70,9 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     		ranksRemain[5] -= 50;
     		
     	}
+    	
+    	// TODO implement system for not playing numbers that we think players have??
+    	// TODO calculate probability that player has a card in each of their hands.. very hard
     	
     	// generates a penalty value for each card in hand
     	int[] penalty = new int[hand.size()];
@@ -81,7 +84,7 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     		} else {
     			cval = colsRemain[getColorValue(c.getColor())];
     		}
-    		penalty[i] += cval*5 + ranksRemain[getRankValue(c.getRank())] - c.forfeitCost()/2;
+    		penalty[i] += cval*80 + ranksRemain[getRankValue(c.getRank())] - c.forfeitCost()/2;
     		
     	}
     	
