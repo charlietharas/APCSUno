@@ -3,11 +3,45 @@ import java.util.List;
 
 public class TharasC_UnoPlayer implements UnoPlayer {
 	
-	// rank orders
-	// COLOR ORDER RED YELLOW GREEN BLUE
-	// RANK ORDER 0 1 2 3 4 5 6 7 8 9 SKIP REVERSE D2 WILD WILD_D4
+	/*
+	 *            ;               ,           
+         ,;                 '.         
+        ;:                   :;        
+       ::                     ::       
+       ::                     ::       
+       ':                     :        
+        :.                    :        
+     ;' ::                   ::  '     
+    .'  ';                   ;'  '.    
+   ::    :;                 ;:    ::   
+   ;      :;.             ,;:     ::   
+   :;      :;:           ,;"      ::   
+   ::.      ':;  ..,.;  ;:'     ,.;:   
+    "'"...   '::,::::: ;:   .;.;""'    
+        '"""....;:::::;,;.;"""         
+    .:::.....'"':::::::'",...;::::;.   
+   ;:' '""'"";.,;:::::;.'""""""  ':;   
+  ::'         ;::;:::;::..         :;  
+ ::         ,;:::::::::::;:..       :: 
+ ;'     ,;;:;::::::::::::::;";..    ':.
+::     ;:"  ::::::"""'::::::  ":     ::
+ :.    ::   ::::::;  :::::::   :     ; 
+  ;    ::   :::::::  :::::::   :    ;  
+   '   ::   ::::::....:::::'  ,:   '   
+    '  ::    :::::::::::::"   ::       
+       ::     ':::::::::"'    ::       
+       ':       """""""'      ::       
+        ::                   ;:        
+        ':;                 ;:"        
+          ';              ,;'          
+            "'           '"            
+              '
+              
+             GO SPIDERS!!!!!
+      please give me more points
+	 */
 	
-	// stores played cards as an instance variable so that callColor() can be a little smarter
+	// stores played cards as an instance variable so that callColor() can be smart
 	List<Card> played;
 	
 	// stores maximum amount of cards in game to calculate remaining cards for card counting
@@ -68,7 +102,7 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     	}
     	
     	// strongly discourages skipping next player when distant player may have low cards
-    	if (hands[1] < 5 || hands[2] < 5) {
+    	if (hands[1] < 5 || hands[2] < 5 || hands[1] - hand.size() > 4 || hands[2] - hand.size() > 4) {
     		
     		adjustRankWeights(ranksRemain, numberWeights, -100);
     		ranksRemain[10] += 1000;
@@ -78,7 +112,7 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     		ranksRemain[14] += 2500;
     		
     		// fully discourages all aggressive play when last player might be more of a threat
-        	if (hands[hands.length-2] > hands[hands.length-3]) {
+        	if (hands[hands.length-2] > hands[hands.length-3] || points[hands.length-2] >= points[points.length-1]*2) {
         		
         		adjustRankWeights(ranksRemain, numberWeights, -100);
         		ranksRemain[10] -= 300;
@@ -156,7 +190,11 @@ public class TharasC_UnoPlayer implements UnoPlayer {
         
     }
     
-    // get color-indexed count of all colors played
+    /**
+     * Get color-indexed count of all colors played (in order {RED YELLOW GREEN BLUE})
+     * @param played list of played cards
+     * @return int[] of length 4 with counts of each color played
+     */
     private int[] playedColorCount(List<Card> played) {
     	
     	int[] colsPlayed = new int[4];
@@ -172,7 +210,11 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     	
     }
     
-    // get rank-indexed count of all ranks played
+    /**
+     * Get rank-indexed count of all ranks played (in order {0 1 2 3 4 5 6 7 8 9 SKIP REVERSE DRAW_TWO WILD WILD_D4})
+     * @param played list of played cards
+     * @return int[] of length 15 with counts of each rank played
+     */
     private int[] playedRankCount(List<Card> played) {
     	
     	int[] ranksPlayed = new int[15];
@@ -186,7 +228,11 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     	
     }
         
-    // returns index from color
+    /**
+     * Returns appropriate index given a color
+     * @param c valid color enum value
+     * @return -1, 0, 1, 2, or 3 depending on the color value (in order {RED YELLOW GREEN BLUE})
+     */
     private int getColorValue(Color c) {
     	
     	switch (c) {
@@ -201,7 +247,11 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     	
     }
     
-    // returns index from rank
+    /**
+     * Returns appropriate rank index given a card
+     * @param c valid card
+     * @return a number -1 through 14 (-1 if error), values 0-9 signify a number rank, 10-14 are in order {SKIP REVERSE DRAW_TWO WILD WILD_D4}
+     */
     private int getRankValue(Card c) {
     	
     	Rank r = c.getRank();
@@ -217,7 +267,12 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     	return -1;
     }
     
-    // checks if color exists in hand for calledColor method
+    /**
+     * Checks if a given color exists in a list of cards
+     * @param c color to check
+     * @param hand list of cards (intended use is for current hand)
+     * @return true if the color is present, false otherwise
+     */
     private boolean colorInHand(Color c, List<Card> hand) {
     	
     	for (Card i : hand) {
@@ -234,8 +289,12 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     	
     }
     
-    // adjust rank weights
-    // intended to modify initial array
+    /**
+     * Helper function to add a parameter to a selection of indices in a given list. Mutator method that is designed to mutate the parameter.
+     * @param weights list to be mutated
+     * @param indices indices at which values should be altered
+     * @param num number to add to each index
+     */
     private void adjustRankWeights(int[] weights, int[] indices, int num) {
     	
     	for (int i : indices) {
