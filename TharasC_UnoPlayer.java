@@ -2,13 +2,27 @@ import java.util.Arrays;
 import java.util.List;
 
 public class TharasC_UnoPlayer implements UnoPlayer {
+	
+	// rank orders
 	// COLOR ORDER RED YELLOW GREEN BLUE
-	// RANK ORDER NUMBER SKIP REVERSE D2 WILD WILD_D4
-		
+	// RANK ORDER 0 1 2 3 4 5 6 7 8 9 SKIP REVERSE D2 WILD WILD_D4
+	
+	// stores played cards as an instance variable so that callColor() can be a little smarter
 	List<Card> played;
+	
+	// stores maximum amount of cards in game to calculate remaining cards for card counting
 	private final int[] cols = {25, 25, 25, 25};
 	private final int[] ranks = {4, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 4, 4};
 	// REQUIRED METHOD
+	/**
+	 * Play
+	 * Selects an index in a given hand of the optimal card to play in that current situation.
+	 * Utilizes a weights-based algorithm:
+	 * </br>-Counts cards to get the amount of remaining cards per color and per rank (including specific numbers as ranks) 
+	 * </br>-Updates penalties based on predetermined rules involving called colors, hand sizes, and point differences
+	 * </br>-Calculates a final penalty based on the amount of remaining colors, rank penalties (previous step), ranks remaining, and forfeit value
+	 * </br>-Plays the first valid card with the minimum penalty based on these rules
+	 */
     public int play(List<Card> hand, Card upCard, Color calledColor, GameState state)
     {
     	    	
@@ -17,42 +31,33 @@ public class TharasC_UnoPlayer implements UnoPlayer {
 		// generates the amount of cards left in the game for each color
     	int[] colsRemain = Arrays.copyOf(playedColorCount(played), 4);
     	int[] ranksRemain = Arrays.copyOf(playedRankCount(played), 15);
-    	for (int i = 0; i < 6; i++) {
+    	int[] handCols = playedColorCount(hand);
+    	int[] handRanks = playedRankCount(hand);
+    	for (int i = 0; i < 15; i++) {
     		
     		if (i < 4) {
-	    		colsRemain[i] = cols[i]-colsRemain[i];
+	    		colsRemain[i] = cols[i]-colsRemain[i]-handCols[i];
     		}
-    		ranksRemain[i] = ranks[i]-ranksRemain[i];
+    		ranksRemain[i] = ranks[i]-ranksRemain[i]-handRanks[i];
     		
     	}
     	
-    	// subtracts penalties for preferred colors
+    	// subtracts penalties for colors that players have called
     	for(Color i : state.getMostRecentColorCalledByUpcomingPlayers()) {
     		
     		if (i != null && getColorValue(i) >= 0) {
     			
-    			colsRemain[getColorValue(i)] -= 250;
+    			colsRemain[getColorValue(i)] -= 200;
     			
     		}
     		
     	}
     	
-    	// updates the amount of cards left in the game based on what we know about each hand
-    	for (Card i : hand) {
-    		
-    		ranksRemain[getRankValue(i)] -= 1;
-    		if (i.getColor() != Color.NONE) {
-    			
-    			colsRemain[getColorValue(i.getColor())] -= 1;
-    			
-    		}
-    		
-    	}
-    	// strongly discourages passive play when danger is detected
+    	// strongly discourages passive play when danger is detected in the next player
     	int[] numberWeights = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     	int[] hands = state.getNumCardsInHandsOfUpcomingPlayers();
     	int[] points = state.getTotalScoreOfUpcomingPlayers();
-    	if (hands[0] - hand.size() > 3 || hands[0] < 4) {
+    	if (hands[0] - hand.size() > 3 || hands[0] < 4 || points[0] >= points[points.length-1]*2) {
     		
     		adjustRankWeights(ranksRemain, numberWeights, 200);
     		ranksRemain[10] -= 800;
@@ -62,7 +67,7 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     		
     	}
     	
-    	// strongly discourages skipping helpful intermediaries when distant player may have low cards
+    	// strongly discourages skipping next player when distant player may have low cards
     	if (hands[1] < 5 || hands[2] < 5) {
     		
     		adjustRankWeights(ranksRemain, numberWeights, -100);
@@ -72,8 +77,8 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     		ranksRemain[13] -= 400;
     		ranksRemain[14] += 2500;
     		
-    		// discourages all aggressive play when last player might have low cards
-        	if (hands[2] > hands[1]) {
+    		// fully discourages all aggressive play when last player might be more of a threat
+        	if (hands[hands.length-2] > hands[hands.length-3]) {
         		
         		adjustRankWeights(ranksRemain, numberWeights, -100);
         		ranksRemain[10] -= 300;
@@ -86,7 +91,7 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     		
     	}
     	    	
-    	// generates a penalty value for each card in hand
+    	// generates a penalty value for each card in hand based on remaining colors, ranks, cost, and predtermined penalties
     	int[] penalty = new int[hand.size()];
     	for (int i = 0; i < penalty.length; i++) {
     		
@@ -96,7 +101,7 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     		} else {
     			cval = colsRemain[getColorValue(c.getColor())];
     		}
-    		penalty[i] += cval*1500 + ranksRemain[getRankValue(c)] - c.forfeitCost();
+    		penalty[i] += cval*800 + ranksRemain[getRankValue(c)] - c.forfeitCost()*10;
     		
     	}
     	
@@ -118,7 +123,12 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     	
     }
 
-    // REQUIRED METHOD
+    /**
+     * callColor
+     * Selects a color to call when this player plays a Wild or Wild D4 card.
+     * Selects the color with the most corresponding cards played (i.e. least proability other players have)
+     * 
+     */
     public Color callColor(List<Card> hand)
     {
         Color[] colors = {Color.RED, Color.YELLOW,Color.GREEN, Color.BLUE};
