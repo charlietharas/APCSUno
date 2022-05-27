@@ -13,14 +13,6 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     {
 		played = state.getPlayedCards();
     	
-		
-		
-    	// TODO implement system for not playing numbers that we think players have??
-		
-		
-		
-		
-		
 		// generates the amount of cards left in the game for each color
     	int[] colsRemain = Arrays.copyOf(playedColorCount(played), 4);
     	int[] ranksRemain = Arrays.copyOf(playedRankCount(played), 15);
