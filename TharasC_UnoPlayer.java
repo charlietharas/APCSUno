@@ -13,6 +13,14 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     {
 		played = state.getPlayedCards();
     	
+		
+		
+    	// TODO implement system for not playing numbers that we think players have??
+		
+		
+		
+		
+		
 		// generates the amount of cards left in the game for each color
     	int[] colsRemain = Arrays.copyOf(playedColorCount(played), 4);
     	int[] ranksRemain = Arrays.copyOf(playedRankCount(played), 6);
@@ -84,10 +92,7 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     		ranksRemain[5] -= 1000;
     		
     	}
-    	
-    	// TODO implement system for not playing numbers that we think players have??
-    	// TODO calculate probability that player has a card in each of their hands.. very hard
-    	
+    	    	
     	// generates a penalty value for each card in hand
     	int[] penalty = new int[hand.size()];
     	for (int i = 0; i < penalty.length; i++) {
