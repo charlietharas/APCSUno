@@ -30,7 +30,7 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     		
     		if (i != null && getColorValue(i) >= 0) {
     			
-    			colsRemain[getColorValue(i)] -= 5;
+    			colsRemain[getColorValue(i)] -= 100;
     			
     		}
     		
