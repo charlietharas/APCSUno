@@ -23,7 +23,7 @@ public class Game
 
     public enum Direction { FORWARDS, BACKWARDS };
     
-    static final boolean PRINT_VERBOSE = true;
+    static final boolean PRINT_VERBOSE = false;
 
     /**
      * An object representing the state of the game at any point in time.
