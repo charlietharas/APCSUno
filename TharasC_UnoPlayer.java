@@ -7,7 +7,7 @@ public class TharasC_UnoPlayer implements UnoPlayer {
 		
 	List<Card> played;
 	private final int[] cols = {25, 25, 25, 25};
-	private final int[] ranks = {76, 8, 8, 8, 4, 4};
+	private final int[] ranks = {4, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 4, 4};
 	// REQUIRED METHOD
     public int play(List<Card> hand, Card upCard, Color calledColor, GameState state)
     {
@@ -23,7 +23,7 @@ public class TharasC_UnoPlayer implements UnoPlayer {
 		
 		// generates the amount of cards left in the game for each color
     	int[] colsRemain = Arrays.copyOf(playedColorCount(played), 4);
-    	int[] ranksRemain = Arrays.copyOf(playedRankCount(played), 6);
+    	int[] ranksRemain = Arrays.copyOf(playedRankCount(played), 15);
     	for (int i = 0; i < 6; i++) {
     		
     		if (i < 4) {
@@ -47,7 +47,7 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     	// updates the amount of cards left in the game based on what we know about each hand
     	for (Card i : hand) {
     		
-    		ranksRemain[getRankValue(i.getRank())] -= 1;
+    		ranksRemain[getRankValue(i)] -= 1;
     		if (i.getColor() != Color.NONE) {
     			
     			colsRemain[getColorValue(i.getColor())] -= 1;
@@ -55,41 +55,41 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     		}
     		
     	}
-    	
+    	int[] numberWeights = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     	// strongly discourages passive play when danger is detected
     	int[] hands = state.getNumCardsInHandsOfUpcomingPlayers();
     	int[] points = state.getTotalScoreOfUpcomingPlayers();
     	if (hands[0] - hand.size() > 3 || hands[0] < 4) {
     		
-    		ranksRemain[0] += 100;
-    		ranksRemain[1] -= 200;
-    		ranksRemain[2] -= 200;
-    		ranksRemain[3] -= 2000;
-    		ranksRemain[5] -= 2000;
+    		adjustRankWeights(ranksRemain, numberWeights, -100);
+    		ranksRemain[10] -= 200;
+    		ranksRemain[11] -= 200;
+    		ranksRemain[12] -= 2000;
+    		ranksRemain[14] -= 2000;
     		
     	}
     	
     	// strongly discourages skipping helpful intermediaries when distant player may have low cards
     	if (hands[1] < 5 || hands[2] < 5) {
     		
-    		ranksRemain[0] -= 100;
-    		ranksRemain[1] += 500;
-    		ranksRemain[2] -= 500;
-    		ranksRemain[3] += 2500;
-    		ranksRemain[4] -= 400;
-    		ranksRemain[5] += 2500;
+    		adjustRankWeights(ranksRemain, numberWeights, -100);
+    		ranksRemain[10] += 500;
+    		ranksRemain[11] -= 500;
+    		ranksRemain[12] += 2500;
+    		ranksRemain[13] -= 400;
+    		ranksRemain[14] += 2500;
     		
     	}
     	
     	// discourages all aggressive play when last player might have low cards
     	if (hands[2] > hands[1]) {
     		
-    		ranksRemain[0] -= 100;
-    		ranksRemain[1] -= 300;
-    		ranksRemain[2] += 600;
-    		ranksRemain[3] += 800;
-    		ranksRemain[4] -= 400;
-    		ranksRemain[5] -= 1000;
+    		adjustRankWeights(ranksRemain, numberWeights, -100);
+    		ranksRemain[10] -= 300;
+    		ranksRemain[11] += 600;
+    		ranksRemain[12] += 800;
+    		ranksRemain[13] -= 400;
+    		ranksRemain[14] -= 1000;
     		
     	}
     	    	
@@ -103,7 +103,7 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     		} else {
     			cval = colsRemain[getColorValue(c.getColor())];
     		}
-    		penalty[i] += cval*5000 + ranksRemain[getRankValue(c.getRank())] - c.forfeitCost();
+    		penalty[i] += cval*5000 + ranksRemain[getRankValue(c)] - c.forfeitCost();
     		
     	}
     	
@@ -128,13 +128,18 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     // REQUIRED METHOD
     public Color callColor(List<Card> hand)
     {
-       
+        Color[] colors = {Color.RED, Color.YELLOW,Color.GREEN, Color.BLUE};
     	int[] colorArr = playedColorCount(played);
     	int max = colorArr[0];
         int ind = 0;
         Color c = Color.RED;
         for (int i = 1; i < 4; i++) {
         	
+        	if (!colorInHand(colors[i], hand)) {
+        		
+        		continue;
+        		
+        	}
         	if (colorArr[i] > max) {
         		
         		ind = i;
@@ -142,12 +147,7 @@ public class TharasC_UnoPlayer implements UnoPlayer {
         	}
         	
         }
-        switch(ind) {
-	        case 0: c = Color.RED;
-	        case 1: c = Color.YELLOW;
-	        case 2: c = Color.GREEN;
-	        case 3: c = Color.BLUE;
-        }
+        c = colors[ind];
         
     	return c;
         
@@ -172,10 +172,10 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     // get rank-indexed count of all ranks played
     private int[] playedRankCount(List<Card> played) {
     	
-    	int[] ranksPlayed = new int[6];
+    	int[] ranksPlayed = new int[15];
     	for (Card i : played) {
     		
-    		ranksPlayed[getRankValue(i.getRank())] ++;
+    		ranksPlayed[getRankValue(i)] ++;
     		
     	}
     	
@@ -199,18 +199,48 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     }
     
     // returns index from rank
-    private int getRankValue(Rank r) {
+    private int getRankValue(Card c) {
     	
+    	Rank r = c.getRank();
     	switch(r){
-    		case NUMBER: return 0;
-    		case SKIP: return 1;
-    		case REVERSE: return 2;
-    		case DRAW_TWO: return 3;
-    		case WILD: return 4;
-    		case WILD_D4: return 5;
+    		case NUMBER: return c.getNumber();
+    		case SKIP: return 10;
+    		case REVERSE: return 11;
+    		case DRAW_TWO: return 12;
+    		case WILD: return 13;
+    		case WILD_D4: return 14;
     	}
     	
     	return -1;
+    }
+    
+    // checks if color exists in hand for calledColor method
+    private boolean colorInHand(Color c, List<Card> hand) {
+    	
+    	for (Card i : hand) {
+    		
+    		if (i.getColor() == c) {
+    			
+    			return true;
+    			
+    		}
+    		
+    	}
+    	
+    	return false;
+    	
+    }
+    
+    // adjust rank weights
+    // intended to modify initial array
+    private void adjustRankWeights(int[] weights, int[] indices, int num) {
+    	
+    	for (int i : indices) {
+    		
+    		weights[i] += num;
+    		
+    	}
+    	
     }
     
 }
