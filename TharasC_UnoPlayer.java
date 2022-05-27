@@ -11,6 +11,7 @@ public class TharasC_UnoPlayer implements UnoPlayer {
 	// REQUIRED METHOD
     public int play(List<Card> hand, Card upCard, Color calledColor, GameState state)
     {
+    	    	
 		played = state.getPlayedCards();
     	
 		// generates the amount of cards left in the game for each color
@@ -30,7 +31,7 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     		
     		if (i != null && getColorValue(i) >= 0) {
     			
-    			colsRemain[getColorValue(i)] -= 100;
+    			colsRemain[getColorValue(i)] -= 250;
     			
     		}
     		
@@ -47,14 +48,14 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     		}
     		
     	}
-    	int[] numberWeights = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     	// strongly discourages passive play when danger is detected
+    	int[] numberWeights = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     	int[] hands = state.getNumCardsInHandsOfUpcomingPlayers();
     	int[] points = state.getTotalScoreOfUpcomingPlayers();
     	if (hands[0] - hand.size() > 3 || hands[0] < 4) {
     		
-    		adjustRankWeights(ranksRemain, numberWeights, -100);
-    		ranksRemain[10] -= 200;
+    		adjustRankWeights(ranksRemain, numberWeights, 200);
+    		ranksRemain[10] -= 800;
     		ranksRemain[11] -= 200;
     		ranksRemain[12] -= 2000;
     		ranksRemain[14] -= 2000;
@@ -65,23 +66,23 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     	if (hands[1] < 5 || hands[2] < 5) {
     		
     		adjustRankWeights(ranksRemain, numberWeights, -100);
-    		ranksRemain[10] += 500;
-    		ranksRemain[11] -= 500;
+    		ranksRemain[10] += 1000;
+    		ranksRemain[11] -= 600;
     		ranksRemain[12] += 2500;
     		ranksRemain[13] -= 400;
     		ranksRemain[14] += 2500;
     		
-    	}
-    	
-    	// discourages all aggressive play when last player might have low cards
-    	if (hands[2] > hands[1]) {
-    		
-    		adjustRankWeights(ranksRemain, numberWeights, -100);
-    		ranksRemain[10] -= 300;
-    		ranksRemain[11] += 600;
-    		ranksRemain[12] += 800;
-    		ranksRemain[13] -= 400;
-    		ranksRemain[14] -= 1000;
+    		// discourages all aggressive play when last player might have low cards
+        	if (hands[2] > hands[1]) {
+        		
+        		adjustRankWeights(ranksRemain, numberWeights, -100);
+        		ranksRemain[10] -= 300;
+        		ranksRemain[11] += 600;
+        		ranksRemain[12] += 800;
+        		ranksRemain[13] -= 400;
+        		ranksRemain[14] -= 1000;
+        		
+        	}
     		
     	}
     	    	
@@ -95,7 +96,7 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     		} else {
     			cval = colsRemain[getColorValue(c.getColor())];
     		}
-    		penalty[i] += cval*5000 + ranksRemain[getRankValue(c)] - c.forfeitCost();
+    		penalty[i] += cval*1500 + ranksRemain[getRankValue(c)] - c.forfeitCost();
     		
     	}
     	
