@@ -50,7 +50,8 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     	
     	// strongly discourages passive play when danger is detected
     	int[] hands = state.getNumCardsInHandsOfUpcomingPlayers();
-    	if (hands[0] - hand.size() > 2 || hands[0] < 4) {
+    	int[] points = state.getTotalScoreOfUpcomingPlayers();
+    	if (hands[0] - hand.size() > 3 || hands[0] < 4) {
     		
     		ranksRemain[0] += 100;
     		ranksRemain[1] -= 200;
@@ -61,13 +62,26 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     	}
     	
     	// strongly discourages skipping helpful intermediaries when distant player may have low cards
-    	if (hands[1] < 4 || hands[2] < 4) {
+    	if (hands[1] < 5 || hands[2] < 5) {
     		
-    		ranksRemain[1] += 60;
-    		ranksRemain[2] += 60;
-    		ranksRemain[3] += 80;
-    		ranksRemain[4] -= 50;
-    		ranksRemain[5] -= 50;
+    		ranksRemain[0] -= 100;
+    		ranksRemain[1] += 500;
+    		ranksRemain[2] -= 500;
+    		ranksRemain[3] += 2500;
+    		ranksRemain[4] -= 400;
+    		ranksRemain[5] += 2500;
+    		
+    	}
+    	
+    	// discourages all aggressive play when last player might have low cards
+    	if (hands[2] > hands[1]) {
+    		
+    		ranksRemain[0] -= 100;
+    		ranksRemain[1] -= 300;
+    		ranksRemain[2] += 600;
+    		ranksRemain[3] += 800;
+    		ranksRemain[4] -= 400;
+    		ranksRemain[5] -= 1000;
     		
     	}
     	
@@ -80,11 +94,11 @@ public class TharasC_UnoPlayer implements UnoPlayer {
     		
     		Card c = hand.get(i); int cval;
     		if (c.getColor() == Color.NONE) {
-    			cval = 0;
+    			cval = colsRemain[getColorValue(callColor(hand))];
     		} else {
     			cval = colsRemain[getColorValue(c.getColor())];
     		}
-    		penalty[i] += cval*80 + ranksRemain[getRankValue(c.getRank())] - c.forfeitCost()/2;
+    		penalty[i] += cval*5000 + ranksRemain[getRankValue(c.getRank())] - c.forfeitCost();
     		
     	}
     	
